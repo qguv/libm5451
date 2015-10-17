@@ -52,7 +52,7 @@ void Sixteen::writeMask(uint32_t frame) {
 uint16_t Sixteen::charMask(char c) {
 
   // lower-case letters are treated as capitals
-  if (c > 'a' && c < 'z') { c -= 'z' - 'Z'; }
+  if (c >= 'a' && c <= 'z') { c -= 'z' - 'Z'; }
 
   // if you ask out of scope, the response is a blank digit
   if ((c < 0) || (c > lastChar)) { return 0u; }
