@@ -5,6 +5,4 @@
 
 Sixteen display = Sixteen(DATAPIN, CLOCKPIN);
 void setup() {}
-void loop() {
-  display.digitTest();
-}
+void loop() { display.digitTest(display.ten); }

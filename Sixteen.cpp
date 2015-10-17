@@ -51,11 +51,14 @@ void Sixteen::writeMask(uint32_t frame) {
 // its own. Use 'print' for that.
 uint16_t Sixteen::charMask(char c) {
 
+  // lower-case letters are treated as capitals
+  if (c > 'a' && c < 'z') { c -= 'z' - 'Z'; }
+
   // if you ask out of scope, the response is a blank digit
-  if ((c < firstChar) || (c > lastChar)) { return 0u; }
+  if ((c < 0) || (c > lastChar)) { return 0u; }
 
   // otherwise, consult the font map
-  return font[c - firstChar];
+  return font[c];
 }
 
 void Sixteen::writeChars(char lchar, char rchar) {
@@ -100,9 +103,10 @@ void Sixteen::scroll(char *message, int delayMilliseconds) {
   delay(delayMilliseconds);
 }
 
-void Sixteen::digitTest() {
-  for (char i = lastChar; i >= firstChar; i -= 2) {
-    writeChars(i, i - 1);
-    delay(500);
+// display each digit for inspection
+void Sixteen::digitTest(char startAt) {
+  for (char i = startAt; i <= lastChar; i += 2) {
+    writeChars(i, i + 1);
+    delay(1500);
   }
 }
