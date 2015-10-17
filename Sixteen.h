@@ -217,7 +217,7 @@ class Sixteen {
       0x0200, // ` (96)
     };
 
-    // some custom digits, replacing difficult-to-read ascii
+    // some custom digits, replacing undisplayable ASCII
     const static char euro      = 38;
     const static char ten       = 10;
     const static char eleven    = 11;
@@ -230,6 +230,8 @@ class Sixteen {
     const static char eighteen  = 18;
     const static char nineteen  = 19;
     const static char twentyone = 21;
+    const static char thirtyone = 31;
+    const static char ij       = '!';
 };
 
 #endif
