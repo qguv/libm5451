@@ -14,7 +14,7 @@ class Sixteen {
     void     writeBit(bool);
     void     writeMask(uint32_t);
     void     writeChars(char, char);
-    void     scroll(char *);
+    void     scroll(char *, int);
     void     digitTest();
 
     // maps characters to 16-segment bitmaps
@@ -42,19 +42,19 @@ class Sixteen {
       0xdc9d, // B (65)
     };
 
-    // some custom digits
-    enum doubledigit {
-      ten       = 58,
-      eleven    = 59,
-      twelve    = 60,
-      thirteen  = 61,
-      fourteen  = 62,
-      fifteen   = 63,
-      sixteen   = 64,
-      seventeen = 91,
-      eighteen  = 92,
-      nineteen  = 93,
-    };
+    // some custom double-digits
+    const static char ten       = 58;
+    const static char eleven    = 59;
+    const static char twelve    = 60;
+    const static char thirteen  = 61;
+    const static char fourteen  = 62;
+    const static char fifteen   = 63;
+    const static char sixteen   = 91;
+    const static char seventeen = 92;
+    const static char eighteen  = 93;
+    const static char nineteen  = 94;
+    const char doubleDigits[7] = {ten, eleven, twelve, thirteen, fourteen,
+      fifteen, '\0'};
 };
 
 #endif

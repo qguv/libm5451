@@ -81,7 +81,23 @@ void Sixteen::writeChars(char lchar, char rchar) {
   writeMask(rframe_low | lframe | rframe_high);
 }
 
-void Sixteen::scroll(char *message) {
+void Sixteen::scroll(char *message, int delayMilliseconds) {
+
+  // the left cell starts empty
+  char left = 0;
+  char *right = message;
+
+  // iterate through the string; left is one char behind
+  do {
+    writeChars(left, *right);
+    left = *right;
+    right++;
+    delay(delayMilliseconds);
+  } while (left != '\0');
+
+  // one empty frame
+  writeChars(0, 0);
+  delay(delayMilliseconds);
 }
 
 void Sixteen::digitTest() {
