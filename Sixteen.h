@@ -151,7 +151,7 @@ class Sixteen {
 
       // printable ASCII
       0x0000, //   (32 whitespace)
-      0x0000, //   (33 unimplemented)
+      0x4145, // ! (33 custom ij diagraph)
       0x0900, // " (34)
       0xc9c9, // # (35)
       0x9d9d, // $ (36)
