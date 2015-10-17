@@ -12,7 +12,7 @@ void setup() {
 }
 void loop() {
   do {
-    display.writeChar(rchar, rchar);
+    display.writeChars(rchar, rchar);
     delay(10);
   } while (true);
 }
