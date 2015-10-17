@@ -53,8 +53,6 @@ class Sixteen {
     const static char seventeen = 92;
     const static char eighteen  = 93;
     const static char nineteen  = 94;
-    const char doubleDigits[7] = {ten, eleven, twelve, thirteen, fourteen,
-      fifteen, '\0'};
 };
 
 #endif
