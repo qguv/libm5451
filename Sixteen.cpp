@@ -1,43 +1,92 @@
-// include core Wiring API
-#include "WProgram.h"
-
-// include this library's description file
+#include "Arduino.h"
 #include "Sixteen.h"
+#include <avr/pgmspace.h>
 
-// Constructor /////////////////////////////////////////////////////////////////
-// Function that handles the creation and setup of instances
+// constructor
+Sixteen::Sixteen(int dataPinIn, int clockPinIn) {
 
-Sixteen::Sixteen(int givenValue)
-{
-  // initialize this instance's variables
-  value = givenValue;
+  // instance variables
+  dataPin  = dataPinIn;
+  clockPin = clockPinIn;
 
-  // do whatever is required to initialize the library
-  pinMode(13, OUTPUT);
-  Serial.begin(9600);
+  // open the required pins
+  pinMode(dataPin,  OUTPUT);
+  pinMode(clockPin, OUTPUT);
+
+  // ensure we're starting low
+  digitalWrite(dataPin,  LOW);
+  digitalWrite(clockPin, LOW);
 }
 
-// Public Methods //////////////////////////////////////////////////////////////
-// Functions available in Wiring sketches, this library, and other libraries
+// Sixteen::writeBit sends a single bit to the data stream, also
+// pulsing the clock.
+void Sixteen::writeBit(bool bit) {
 
-void Sixteen::doSomething(void)
-{
-  // eventhough this function is public, it can access
-  // and modify this library's private variables
-  Serial.print("value is ");
-  Serial.println(value);
+  // set the bit
+  digitalWrite(dataPin, bit);
 
-  // it can also call private functions of this library
-  doSomethingSecret();
+  // pulse the clock
+  digitalWrite(clockPin, HIGH);
+  delay(1);
+  digitalWrite(clockPin, LOW);
 }
 
-// Private Methods /////////////////////////////////////////////////////////////
-// Functions only available to other functions in this library
+// Sixteen::writeMask sets all 32 LEDs at once using a bitmask.
+void Sixteen::writeMask(uint32_t frame) {
 
-void Sixteen::doSomethingSecret(void)
-{
-  digitalWrite(13, HIGH);
-  delay(200);
-  digitalWrite(13, LOW);
-  delay(200);
+  // write the 'enable' bit and the first disconnected pin
+  writeBit(true); writeBit(false);
+
+  // write the bitmask, bit by bit
+  for (int i = 0; i < 32; i++) {
+    writeBit((bool) ((frame >> i) & 1));
+  }
+
+  // write to the other two disconnected pins
+  writeBit(false); writeBit(false);
+}
+
+// make a 16-bit digit out of a character. Note that this is not
+// right-side or left-side specific and would not be displayable on
+// its own. Use 'print' for that.
+uint16_t Sixteen::charMask(char c) {
+
+  // if you ask out of scope, the response is a blank digit
+  if ((c < firstChar) || (c > lastChar)) { return 0u; }
+
+  // otherwise, consult the font map
+  return font[c - firstChar];
+}
+
+void Sixteen::writeChars(char lchar, char rchar) {
+
+  // left digit starts at bit 8 and continues t/m bit 23, so we'll push our
+  // idealized character 8 bits forward to fill the left digit
+  uint32_t lframe = (uint32_t) charMask(lchar);
+  lframe <<= 8;
+
+  // right digit takes up 0 t/m 7 and 24 t/m 31 (weird, right?) so we'll split
+  // the bit in two, printing the bottom as normal and cutting off and pushing
+  // forward the top half of the bottom one
+  uint32_t rframe_high, rframe_low;
+  rframe_low = (uint32_t) charMask(rchar);
+
+  rframe_high = rframe_low & 0xff00u;
+  rframe_low &= 0x00ffu;
+
+  // push the high segment to its place
+  rframe_high <<= 16;
+
+  // write the segments
+  writeMask(rframe_low | lframe | rframe_high);
+}
+
+void Sixteen::scroll(char *message) {
+}
+
+void Sixteen::digitTest() {
+  for (char i = lastChar; i >= firstChar; i -= 2) {
+    writeChars(i, i - 1);
+    delay(500);
+  }
 }
