@@ -11,8 +11,12 @@ void setup() {
   randomSeed(analogRead(0));
 }
 void loop() {
+
+  display.writeMask(~(uint32_t) 0);
+
+  delay(500);
   do {
     display.writeChars(rchar, rchar);
-    delay(10);
+    delay(70);
   } while (true);
 }
