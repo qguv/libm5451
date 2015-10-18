@@ -35,7 +35,7 @@ void Sixteen::writeBit(int screen, bool bit) {
 
   // pulse the clock
   digitalWrite(clockPins[screen], HIGH);
-  delay(1);
+  delayMicroseconds(10);
   digitalWrite(clockPins[screen], LOW);
 }
 
