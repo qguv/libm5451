@@ -3,11 +3,17 @@
 #include <avr/pgmspace.h>
 
 // constructor
-Sixteen::Sixteen(int dataPinIn, int clockPinIn) {
+Sixteen::Sixteen() {
+  numScreens = 0;
+}
 
-  // instance variables
-  dataPin  = dataPinIn;
-  clockPin = clockPinIn;
+// add your screens left-to-right
+void Sixteen::addScreen(int dataPin, int clockPin) {
+
+  if (numScreens == maxNumScreens) { return; }
+
+  dataPins[numScreens]  = dataPin;
+  clockPins[numScreens] = clockPin;
 
   // open the required pins
   pinMode(dataPin,  OUTPUT);
@@ -16,34 +22,36 @@ Sixteen::Sixteen(int dataPinIn, int clockPinIn) {
   // ensure we're starting low
   digitalWrite(dataPin,  LOW);
   digitalWrite(clockPin, LOW);
+
+  numScreens++;
 }
 
 // Sixteen::writeBit sends a single bit to the data stream, also
 // pulsing the clock.
-void Sixteen::writeBit(bool bit) {
+void Sixteen::writeBit(int screen, bool bit) {
 
   // set the bit
-  digitalWrite(dataPin, bit);
+  digitalWrite(dataPins[screen], bit);
 
   // pulse the clock
-  digitalWrite(clockPin, HIGH);
+  digitalWrite(clockPins[screen], HIGH);
   delay(1);
-  digitalWrite(clockPin, LOW);
+  digitalWrite(clockPins[screen], LOW);
 }
 
 // Sixteen::writeMask sets all 32 LEDs at once using a bitmask.
-void Sixteen::writeMask(uint32_t frame) {
+void Sixteen::writeMask(int screen, uint32_t frame) {
 
   // write the 'enable' bit and the first disconnected pin
-  writeBit(true); writeBit(false);
+  writeBit(screen, true); writeBit(screen, false);
 
   // write the bitmask, bit by bit
   for (int i = 0; i < 32; i++) {
-    writeBit((bool) ((frame >> i) & 1));
+    writeBit(screen, (bool) ((frame >> i) & 1));
   }
 
   // write to the other two disconnected pins
-  writeBit(false); writeBit(false);
+  writeBit(screen, false); writeBit(screen, false);
 }
 
 // make a 16-bit digit out of a character. Note that this is not
@@ -61,7 +69,7 @@ uint16_t Sixteen::charMask(char c) {
   return font[c];
 }
 
-void Sixteen::writeChars(char lchar, char rchar) {
+void Sixteen::writeChars(int screen, char lchar, char rchar) {
 
   // left digit starts at bit 8 and continues t/m bit 23, so we'll push our
   // idealized character 8 bits forward to fill the left digit
@@ -81,32 +89,93 @@ void Sixteen::writeChars(char lchar, char rchar) {
   rframe_high <<= 16;
 
   // write the segments
-  writeMask(rframe_low | lframe | rframe_high);
+  writeMask(screen, rframe_low | lframe | rframe_high);
 }
 
-void Sixteen::scroll(char *message, int delayMilliseconds) {
 
-  // the left cell starts empty
-  char left = 0;
-  char *right = message;
+/* write a scrolling message to the screen sequence
+ * remember: screens are added and numbered left-to-right
+ *
+ *         [][]   [][]   [][]   [][] ...
+ * digit:  0  1   2  3   4  5   6  7 ...
+ * screen:  #0     #1     #2     #3  ...
+ */
+void Sixteen::scroll(const char *message, int delay_ms) {
 
-  // iterate through the string; left is one char behind
-  do {
-    writeChars(left, *right);
-    left = *right;
-    right++;
-    delay(delayMilliseconds);
-  } while (left != '\0');
+  // ignore empty strings
+  if ('\0' == *message) { return; }
 
-  // one empty frame
-  writeChars(0, 0);
-  delay(delayMilliseconds);
+  // we actually iterate through the string with the digit on the far right
+  // side of the chain of 16-segment displays
+  const char *farRight = message;
+  bool stringExhausted = false;
+
+  // in the first part of the animation, the string starts to crawl from the
+  // right to the left side of the digit-chain. every digit that hasn't yet
+  // seen the first char of the message displays a blank char.
+  int numDigits = (numScreens * 2);
+  int lastDigit = numDigits - 1;
+  int thisDigit;
+
+  // we start lots of left-padding: every digit but the last
+  char highestDigitPadded = lastDigit - 1;
+
+  // we start with no right-padding yet: we'll add it when the string is over
+  char lowestDigitPadded  = lastDigit + 1;
+
+  // now let's print the string
+  char left, right;
+  while (lowestDigitPadded >= 0) {
+
+    // at each animation frame, we have to print to each screen
+    for (int screen = numScreens - 1; screen >= 0; screen--) {
+
+      // determine the right-side character
+      thisDigit = (screen * 2) + 1;
+      if (highestDigitPadded >= thisDigit) {
+        right = ' ';
+      } else if (lowestDigitPadded <= thisDigit) {
+        right = ' ';
+      } else {
+        right = *(farRight + (lastDigit - thisDigit));
+      }
+
+      // determine the left-side character
+      thisDigit = (screen * 2);
+      if (highestDigitPadded >= thisDigit) {
+        left = ' ';
+      } else if (lowestDigitPadded <= thisDigit) {
+        left = ' ';
+      } else {
+        left = *(farRight - (lastDigit - thisDigit));
+      }
+
+      // write calculated characters to this screen
+      writeChars(screen, left, right);
+    }
+
+    // take away a digit of left-padding if there's any left
+    if (highestDigitPadded >= 0) { highestDigitPadded--; }
+
+    // if the string is exhausted, add a digit of right-padding
+    if (stringExhausted) {
+      lowestDigitPadded--;
+
+    // advance the string if there's any string left
+    } else {
+      farRight++;
+      stringExhausted = ('\0' == *farRight);
+    }
+
+    // wait a bit so humans can see this frame
+    delay(delay_ms);
+  }
 }
 
 // display each digit for inspection
-void Sixteen::digitTest(char startAt) {
+void Sixteen::digitTest(int screen, char startAt) {
   for (char i = startAt; i <= lastChar; i += 2) {
-    writeChars(i, i + 1);
+    writeChars(screen, i, i + 1);
     delay(1500);
   }
 }

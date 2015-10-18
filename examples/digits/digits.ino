@@ -3,6 +3,6 @@
 #define DATAPIN  2
 #define CLOCKPIN 3
 
-Sixteen display = Sixteen(DATAPIN, CLOCKPIN);
-void setup() {}
-void loop() { display.digitTest(display.ten); }
+Sixteen display = Sixteen();
+void setup() { display.addScreen(DATAPIN, CLOCKPIN); }
+void loop() { display.digitTest(0, display.ten); }

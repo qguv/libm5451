@@ -6,16 +6,21 @@
 class Sixteen {
 
   public:
-    Sixteen(int, int);
-    int      dataPin;
-    int      clockPin;
+    Sixteen();
 
+    const static int maxNumScreens = 32;
+
+    int      dataPins[maxNumScreens];
+    int      clockPins[maxNumScreens];
+    int      numScreens;
+
+    void     addScreen(int, int);
     uint16_t charMask(char);
-    void     writeBit(bool);
-    void     writeMask(uint32_t);
-    void     writeChars(char, char);
-    void     scroll(char *, int);
-    void     digitTest(char);
+    void     writeBit(int, bool);
+    void     writeMask(int, uint32_t);
+    void     writeChars(int, char, char);
+    void     scroll(const char *, int);
+    void     digitTest(int, char);
 
     /* ===== GLYPH STORAGE =====
      *

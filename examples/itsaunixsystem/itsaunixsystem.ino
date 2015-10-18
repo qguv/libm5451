@@ -4,15 +4,17 @@
 #define CLOCKPIN 3
 #define RANDPIN  0 // n.b. this is an analog pin
 
-Sixteen display = Sixteen(DATAPIN, CLOCKPIN);
+Sixteen display = Sixteen();
 
 void setup() {
+
+  display.addScreen(DATAPIN, CLOCKPIN);
 
   // use analog noise to generate random numbers
   randomSeed(analogRead(0));
 
   // fill the screen
-  display.writeMask(~(uint32_t) 0);
+  display.writeMask(0, ~(uint32_t) 0);
   delay(500);
 }
 
@@ -27,6 +29,6 @@ char rchar() {
 
 // repeatedly display arbitrary characters
 void loop() {
-  display.writeChars(rchar(), rchar());
+  display.writeChars(0, rchar(), rchar());
   delay(70);
 }
