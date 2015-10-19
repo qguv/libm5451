@@ -137,7 +137,7 @@ void Sixteen::scroll(const char *message, int delay_ms) {
       } else if (lowestDigitPadded <= thisDigit) {
         right = ' ';
       } else {
-        right = *(farRight - (lastDigit - thisDigit));
+        right = *(farRight - (lastDigit - thisDigit) + (numDigits - lowestDigitPadded));
       }
 
       // determine the left-side character
@@ -147,7 +147,7 @@ void Sixteen::scroll(const char *message, int delay_ms) {
       } else if (lowestDigitPadded <= thisDigit) {
         left = ' ';
       } else {
-        left = *(farRight - (lastDigit - thisDigit));
+        left = *(farRight - (lastDigit - thisDigit) + (numDigits - lowestDigitPadded));
       }
 
       // write calculated characters to this screen
