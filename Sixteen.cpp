@@ -137,7 +137,7 @@ void Sixteen::scroll(const char *message, int delay_ms) {
       } else if (lowestDigitPadded <= thisDigit) {
         right = ' ';
       } else {
-        right = *(farRight + (lastDigit - thisDigit));
+        right = *(farRight - (lastDigit - thisDigit));
       }
 
       // determine the left-side character
