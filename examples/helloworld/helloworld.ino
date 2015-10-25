@@ -1,7 +1,7 @@
 #include <Sixteen.h>
 
-#define DATAPIN  2
-#define CLOCKPIN 3
+#define DATAPIN  3
+#define CLOCKPIN 2
 
 Sixteen display = Sixteen();
 

@@ -1,18 +1,13 @@
 #include <Sixteen.h>
 
-#define DATAPINLEFT   A3
-#define CLOCKPINLEFT  A2
-#define DATAPINMID    A1
-#define CLOCKPINMID   A0
-#define DATAPINRIGHT  11
-#define CLOCKPINRIGHT 10
-
 Sixteen display = Sixteen();
 
 void setup() {
-  display.addScreen(DATAPINLEFT, CLOCKPINLEFT);
-  display.addScreen(DATAPINMID, CLOCKPINMID);
-  display.addScreen(DATAPINRIGHT, CLOCKPINRIGHT);
+  display.addScreen(11, 10);
+  display.addScreen(9, 8);
+  display.addScreen(7, 6);
+  display.addScreen(5, 4);
+  display.addScreen(3, 2);
 }
 
 void loop() {
