@@ -91,27 +91,27 @@ void Sixteen::writeChars(int screen, char lchar, char rchar) {
   writeMask(screen, rframe_low | lframe | rframe_high);
 }
 
-/* write a single string to the display sequence. return true iff we reached
- * the end */
+/* write a single string to the display sequence. return true
+ * iff we reached the end */
 bool Sixteen::ltr(const char *message) {
   bool gotTheWholeString = false;
   char leftChar, rightChar;
 
-  for (int i = 0; i < num_screens; i++) {
+  for (int i = 0; i < numScreens; i++) {
 
     if (gotTheWholeString) {
       writeChars(i, ' ', ' ');
       continue;
     }
 
-    leftChar = message[2 * i + first];
+    leftChar = message[2 * i];
     if (leftChar == '\0') {
       gotTheWholeString = true;
       writeChars(i, ' ', ' ');
       continue;
     }
 
-    rightChar = message[2 * i + first + 1];
+    rightChar = message[2 * i + 1];
     if (rightChar == '\0') {
       gotTheWholeString = true;
       writeChars(i, leftChar, ' ');
@@ -120,32 +120,39 @@ bool Sixteen::ltr(const char *message) {
 
     writeChars(i, leftChar, rightChar);
   }
+
+  // check to see whether we've reached the end of the string
+  if (!gotTheWholeString) {
+    gotTheWholeString = ('\0' == message[2 * numScreens]);
+  }
+
   return gotTheWholeString;
 }
 
-/* write a scrolling message to the screen sequence
- * remember: screens are added and numbered left-to-right
- *
- *         [][]   [][]   [][]   [][] ...
- * digit:  0  1   2  3   4  5   6  7 ...
- * screen:  #0     #1     #2     #3  ...
- */
+// write a scrolling message to the screen sequence
 void Sixteen::scroll(const char *message, int delay_ms) {
+
   // ignore empty strings
   if ('\0' == *message) { return; }
 
+  int screenReadTime = delay_ms * numScreens * 2;
+
   // print as much of the message as will fit on the screen
   bool gotTheWholeString = ltr(message++);
-  delay(delay_ms * numScreens / 2);
-  if (gotTheWholeString) { return; }
 
-  // start scrolling if we have more to go
-  while (!ltr(message++)) {
-    delay(delay_ms);
+  if (!gotTheWholeString) {
+
+    // give the human time to read about half of the screen
+    delay(screenReadTime / 2);
+
+    // start scrolling if we have more to go
+    while (!ltr(message++)) {
+      delay(delay_ms);
+    }
   }
 
-  // once we're done, give some time to read
-  delay(delay_ms * numScreens / 2);
+  // once we're done, give some time to read the whole screen
+  delay(screenReadTime);
 }
 
 // display each digit for inspection

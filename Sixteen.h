@@ -19,6 +19,7 @@ class Sixteen {
     void     writeBit(int, bool);
     void     writeMask(int, uint32_t);
     void     writeChars(int, char, char);
+    bool     ltr(const char *);
     void     scroll(const char *, int);
     void     digitTest(int, char);
 
