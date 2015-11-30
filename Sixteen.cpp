@@ -54,9 +54,8 @@ void Sixteen::writeMask(int screen, uint32_t frame) {
   writeBit(screen, false); writeBit(screen, false);
 }
 
-// make a 16-bit digit out of a character. Note that this is not
-// right-side or left-side specific and would not be displayable on
-// its own. Use 'print' for that.
+/* make a 16-bit digit out of a character. Note that this is not right-side or
+ * left-side specific and would not be displayable on its own. */
 uint16_t Sixteen::charMask(char c) {
 
   // lower-case letters are treated as capitals
@@ -92,6 +91,37 @@ void Sixteen::writeChars(int screen, char lchar, char rchar) {
   writeMask(screen, rframe_low | lframe | rframe_high);
 }
 
+/* write a single string to the display sequence. return true iff we reached
+ * the end */
+bool Sixteen::ltr(const char *message) {
+  bool gotTheWholeString = false;
+  char leftChar, rightChar;
+
+  for (int i = 0; i < num_screens; i++) {
+
+    if (gotTheWholeString) {
+      writeChars(i, ' ', ' ');
+      continue;
+    }
+
+    leftChar = message[2 * i + first];
+    if (leftChar == '\0') {
+      gotTheWholeString = true;
+      writeChars(i, ' ', ' ');
+      continue;
+    }
+
+    rightChar = message[2 * i + first + 1];
+    if (rightChar == '\0') {
+      gotTheWholeString = true;
+      writeChars(i, leftChar, ' ');
+      continue;
+    }
+
+    writeChars(i, leftChar, rightChar);
+  }
+  return gotTheWholeString;
+}
 
 /* write a scrolling message to the screen sequence
  * remember: screens are added and numbered left-to-right
@@ -101,75 +131,21 @@ void Sixteen::writeChars(int screen, char lchar, char rchar) {
  * screen:  #0     #1     #2     #3  ...
  */
 void Sixteen::scroll(const char *message, int delay_ms) {
-
   // ignore empty strings
   if ('\0' == *message) { return; }
 
-  // we actually iterate through the string with the digit on the far right
-  // side of the chain of 16-segment displays
-  const char *farRight = message;
-  bool stringExhausted = false;
+  // print as much of the message as will fit on the screen
+  bool gotTheWholeString = ltr(message++);
+  delay(delay_ms * numScreens / 2);
+  if (gotTheWholeString) { return; }
 
-  // in the first part of the animation, the string starts to crawl from the
-  // right to the left side of the digit-chain. every digit that hasn't yet
-  // seen the first char of the message displays a blank char.
-  int numDigits = (numScreens * 2);
-  int lastDigit = numDigits - 1;
-  int thisDigit;
-
-  // we start lots of left-padding: every digit but the last
-  char highestDigitPadded = lastDigit - 1;
-
-  // we start with no right-padding yet: we'll add it when the string is over
-  char lowestDigitPadded  = lastDigit + 1;
-
-  // now let's print the string
-  char left, right;
-  while (lowestDigitPadded >= 0) {
-
-    // at each animation frame, we have to print to each screen
-    for (int screen = numScreens - 1; screen >= 0; screen--) {
-
-      // determine the right-side character
-      thisDigit = (screen * 2) + 1;
-      if (highestDigitPadded >= thisDigit) {
-        right = ' ';
-      } else if (lowestDigitPadded <= thisDigit) {
-        right = ' ';
-      } else {
-        right = *(farRight - (lastDigit - thisDigit) + (numDigits - lowestDigitPadded));
-      }
-
-      // determine the left-side character
-      thisDigit = (screen * 2);
-      if (highestDigitPadded >= thisDigit) {
-        left = ' ';
-      } else if (lowestDigitPadded <= thisDigit) {
-        left = ' ';
-      } else {
-        left = *(farRight - (lastDigit - thisDigit) + (numDigits - lowestDigitPadded));
-      }
-
-      // write calculated characters to this screen
-      writeChars(screen, left, right);
-    }
-
-    // take away a digit of left-padding if there's any left
-    if (highestDigitPadded >= 0) { highestDigitPadded--; }
-
-    // if the string is exhausted, add a digit of right-padding
-    if (stringExhausted) {
-      lowestDigitPadded--;
-
-    // advance the string if there's any string left
-    } else {
-      farRight++;
-      stringExhausted = ('\0' == *farRight);
-    }
-
-    // wait a bit so humans can see this frame
+  // start scrolling if we have more to go
+  while (!ltr(message++)) {
     delay(delay_ms);
   }
+
+  // once we're done, give some time to read
+  delay(delay_ms * numScreens / 2);
 }
 
 // display each digit for inspection
