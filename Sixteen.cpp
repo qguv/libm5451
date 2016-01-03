@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "Sixteen.h"
-#include <avr/pgmspace.h>
+// #include <avr/pgmspace.h> // removed for ESP8266 compatibility
 
 // constructor
 Sixteen::Sixteen() {
