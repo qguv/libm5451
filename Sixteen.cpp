@@ -1,6 +1,15 @@
 #include "Arduino.h"
 #include "Sixteen.h"
-#include <avr/pgmspace.h>
+
+#ifdef __AVR__
+ #include <avr/pgmspace.h>
+#elif defined(ESP8266)
+ #include <pgmspace.h>
+#else
+ #ifndef pgm_read_byte
+  #define pgm_read_byte(addr) (*(const unsigned char *)(addr))
+ #endif
+#endif
 
 // constructor
 Sixteen::Sixteen() {
